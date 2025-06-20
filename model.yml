@@ -1,0 +1,5 @@
+short_name: invasion-ruscone
+version: 1.0.0
+binary: myproj
+config: 
+  - config/PhysiCell_settings.xml

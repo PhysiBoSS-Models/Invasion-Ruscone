@@ -1,0 +1,250 @@
+name: Build binaries
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  packages: write
+   
+jobs:
+         
+  ubuntu:
+    
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Read model metadata
+      id: read_model_metadata
+      run: |
+        pip install PyYAML
+        python .github/workflows/read_model_metadata.py
+
+    - name: Build model
+      run: |
+        make static STATIC_OPENMP=/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.a
+      
+    - name: Checking binary for model
+      run: |
+        ldd ${{ steps.read_model_metadata.outputs.model_binary }}
+            
+    - name: Build model archive
+      run: |
+        rm -fr config/PhysiCell_settings-backup.xml
+        tar -zcvf ${{ steps.read_model_metadata.outputs.model_short_name }}-linux.tar.gz ${{ steps.read_model_metadata.outputs.model_binary }} Makefile main.cpp config/ custom_modules/ model.yml
+         
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: ${{ steps.read_model_metadata.outputs.model_short_name }}-linux.tar.gz
+        asset_path: ${{ github.workspace }}/${{ steps.read_model_metadata.outputs.model_short_name }}-linux.tar.gz
+        asset_content_type: application/gzip   
+        
+        
+  windows:
+    runs-on: windows-2022
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: msys2/setup-msys2@v2
+      id: setup-msys2
+      with:
+        update: true
+        install: mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc mingw-w64-x86_64-headers-git mingw-w64-x86_64-gcc-libs mingw-w64-x86_64-libwinpthread-git mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas mingw-w64-x86_64-libxml2 mingw-w64-x86_64-bzip2 mingw-w64-x86_64-python mingw-w64-x86_64-python-yaml mingw-w64-x86_64-python-zstandard mingw-w64-x86_64-python-cffi make bison flex mingw-w64-x86_64-ca-certificates
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Read model metadata
+      id: read_model_metadata
+      run: |
+        python .github/workflows/read_model_metadata.py
+  
+    - name: Build model
+      run: |
+        python beta/setup_windows_dep.py
+        make static
+        
+    - name: Checking binary for model
+      run: |
+        ldd .\\${{ steps.read_model_metadata.outputs.model_binary }}.exe
+      
+    - name: Build model archive
+      run: |
+        rm -fr config/PhysiCell_settings-backup.xml
+        tar -zcvf ${{ steps.read_model_metadata.outputs.model_short_name }}-win.tar.gz ${{ steps.read_model_metadata.outputs.model_binary }}.exe *.dll Makefile main.cpp config/ custom_modules/ model.yml
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: ${{ steps.read_model_metadata.outputs.model_short_name }}-win.tar.gz
+        asset_path: ${{ github.workspace }}\${{ steps.read_model_metadata.outputs.model_short_name }}-win.tar.gz
+        asset_content_type: application/gzip
+        
+  
+  macos_step0a:
+
+    runs-on: macos-13
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run : |
+        if ! brew list gcc@13 &>/dev/null; then
+          brew install gcc@13
+        else
+          echo "gcc@13 is already installed."
+        fi
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Read model metadata
+      id: read_model_metadata
+      run: |
+        pip install PyYAML
+        python .github/workflows/read_model_metadata.py
+   
+    - name: Build model
+      run: |
+        export MACOSX_DEPLOYMENT_TARGET=13
+        make PHYSICELL_CPP=g++-13 static
+        cp ${{ steps.read_model_metadata.outputs.model_binary }} ${{ steps.read_model_metadata.outputs.model_binary }}_macos13
+
+    - name: Caching produced project binary 
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/${{ steps.read_model_metadata.outputs.model_binary }}_macos13
+        key: ${{ runner.os }}-macos13-${{ github.run_id }}
+    
+    - name: Look at the generated binary
+      run: |
+        otool -L ${{ steps.read_model_metadata.outputs.model_binary }}
+        otool -l ${{ steps.read_model_metadata.outputs.model_binary }}
+        lipo -archs ${{ steps.read_model_metadata.outputs.model_binary }}
+    
+  macos_step0b:
+    
+    runs-on: macos-14
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run : |
+        if ! brew list gcc@13 &>/dev/null; then
+          brew install gcc@13
+        else
+          echo "gcc@13 is already installed."
+        fi
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Read model metadata
+      id: read_model_metadata
+      run: |
+        pip install PyYAML
+        python .github/workflows/read_model_metadata.py
+
+    - name: Build model
+      run: |
+        export MACOSX_DEPLOYMENT_TARGET=13
+        make PHYSICELL_CPP=g++-13 static
+        cp ${{ steps.read_model_metadata.outputs.model_binary }} ${{ steps.read_model_metadata.outputs.model_binary }}_macosm1
+   
+    - name: Caching produced project binary 
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/${{ steps.read_model_metadata.outputs.model_binary }}_macosm1
+        key: ${{ runner.os }}-macosm1-${{ github.run_id }}
+      
+    - name: Look at the generated binary
+      run: |
+        otool -L ${{ steps.read_model_metadata.outputs.model_binary }}
+        otool -l ${{ steps.read_model_metadata.outputs.model_binary }}
+        lipo -archs ${{ steps.read_model_metadata.outputs.model_binary }} 
+        
+  macos_step1:
+    
+    runs-on: macos-13
+    needs: [macos_step0a, macos_step0b]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Read model metadata
+      id: read_model_metadata
+      run: |
+        pip install PyYAML
+        python .github/workflows/read_model_metadata.py
+
+    - name: Caching produced project binary 
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/${{ steps.read_model_metadata.outputs.model_binary }}_macosm1
+        key: ${{ runner.os }}-macosm1-${{ github.run_id }}
+    
+    - name: Caching produced project binary 
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/${{ steps.read_model_metadata.outputs.model_binary }}_macos13
+        key: ${{ runner.os }}-macos13-${{ github.run_id }}
+    
+    - name: Creating universal binary
+      run: | 
+        lipo -create -output ${{ steps.read_model_metadata.outputs.model_binary }} ${{ steps.read_model_metadata.outputs.model_binary }}_macos13 ${{ steps.read_model_metadata.outputs.model_binary }}_macosm1
+
+    - name: Checking universal binary
+      run: |
+        lipo -archs ${{ steps.read_model_metadata.outputs.model_binary }}
+        otool -l ${{ steps.read_model_metadata.outputs.model_binary }}
+        otool -L ${{ steps.read_model_metadata.outputs.model_binary }}
+        
+    - name: Build project archive
+      run: |
+        rm -fr config/PhysiCell_settings-backup.xml
+        tar -zcvf ${{ steps.read_model_metadata.outputs.model_short_name }}-macos.tar.gz ${{ steps.read_model_metadata.outputs.model_binary }} Makefile main.cpp config/ custom_modules/ model.yml
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: ${{ steps.read_model_metadata.outputs.model_short_name }}-macos.tar.gz
+        asset_path: ${{ github.workspace }}/${{ steps.read_model_metadata.outputs.model_short_name }}-macos.tar.gz
+        asset_content_type: application/gzip
