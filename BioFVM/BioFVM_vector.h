@@ -13,7 +13,7 @@
 #                                                                           #
 # BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)   #
 #                                                                           #
-# Copyright (c) 2015-2017, Paul Macklin and the BioFVM Project              #
+# Copyright (c) 2015-2025, Paul Macklin and the BioFVM Project              #
 # All rights reserved.                                                      #
 #                                                                           #
 # Redistribution and use in source and binary forms, with or without        #
@@ -103,14 +103,14 @@ void randomize( std::vector<double>* v );
 /* axpy and related BLAS-type operations */ 
 
 // y = y + a*x 
-void axpy( std::vector<double>* y, double& a , std::vector<double>& x );
+void axpy( std::vector<double>* y, const double& a , const std::vector<double>& x );
 // y = y + a.*x
-void axpy( std::vector<double>* y, std::vector<double>& a , std::vector<double>& x ); 
+void axpy( std::vector<double>* y, const std::vector<double>& a , const std::vector<double>& x ); 
 
 // y = y - a*x 
-void naxpy( std::vector<double>* y, double& a , std::vector<double>& x );
+void naxpy( std::vector<double>* y, const double& a , const std::vector<double>& x );
 // y = y - a.*x
-void naxpy( std::vector<double>* y, std::vector<double>& a , std::vector<double>& x ); 
+void naxpy( std::vector<double>* y, const std::vector<double>& a , const std::vector<double>& x ); 
 
 /* I may cut these from the final version */ 
 /* CLEANUP BEFORE RELEASE */ 
@@ -141,6 +141,9 @@ void vector_to_list( const std::vector<double>& vect , char*& buffer , char deli
 
 void vector3_to_list( const std::vector<double>& vect , char*& buffer , char delim ); 
 
+double dot_product( const std::vector<double>& a , const std::vector<double>& b );
+std::vector<double> cross_product( const std::vector<double>& a , const std::vector<double>& b );
+    
 };
 
 #endif

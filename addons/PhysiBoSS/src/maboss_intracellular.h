@@ -10,7 +10,7 @@
 #include "maboss_network.h"
 #include "utils.h"
 
-static std::string PhysiBoSS_Version = "2.2.0"; 
+static std::string PhysiBoSS_Version = "2.2.3"; 
 static std::string PhysiBoSS_DOI = "10.1038/s41540-023-00314-4"; 
 static std::string PhysiBoSS_URL = "https://github.com/PhysiBoSS/PhysiBoSS"; 
 
@@ -102,10 +102,6 @@ class MaBoSSIntracellular : public PhysiCell::Intracellular {
 		this->maboss.set_node_value(name, value);
 	}
 	
-	void mutate(std::map<std::string, double> mutations)  {
-		this->maboss.mutate(mutations);
-	}
-
 	double get_parameter_value(std::string name) {
 		return this->maboss.get_parameter_value(name);
 	}
@@ -124,7 +120,7 @@ class MaBoSSIntracellular : public PhysiCell::Intracellular {
 
 	void display(std::ostream& os);
 	
-	static void save(std::string filename, std::vector<PhysiCell::Cell*>& cells);
+	static void save(std::string filename);
 
     // unneeded for this type
     int update_phenotype_parameters(PhysiCell::Phenotype& phenotype) {return 0;}

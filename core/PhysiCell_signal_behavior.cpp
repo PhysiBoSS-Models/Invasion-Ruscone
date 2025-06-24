@@ -33,7 +33,7 @@
 #                                                                             #
 # BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)     #
 #                                                                             #
-# Copyright (c) 2015-2023, Paul Macklin and the PhysiCell Project             #
+# Copyright (c) 2015-2025, Paul Macklin and the PhysiCell Project             #
 # All rights reserved.                                                        #
 #                                                                             #
 # Redistribution and use in source and binary forms, with or without          #
@@ -173,13 +173,34 @@ void setup_signal_behavior_dictionaries( void )
 		// synonym 
 	signal_to_int["contact with live cells"] = map_index; 
 	
-	// contact with dead cell 
+	// contact with (any) dead cell 
 	map_index++; 
 	signal_to_int["contact with dead cell"] = map_index; 
 	int_to_signal[map_index] = "contact with dead cell"; 
 		// synonym 
 	signal_to_int["contact with dead cells"] = map_index; 	
+
+	// contact with apoptotic cell 
+	map_index++; 
+	signal_to_int["contact with apoptotic cell"] = map_index; 
+	int_to_signal[map_index] = "contact with apoptotic cell"; 
+		// synonym 
+	signal_to_int["contact with apoptotic cells"] = map_index; 	
 	
+	// contact with necrotic cell 
+	map_index++; 
+	signal_to_int["contact with necrotic cell"] = map_index; 
+	int_to_signal[map_index] = "contact with necrotic cell"; 
+		// synonym 
+	signal_to_int["contact with necrotic cells"] = map_index; 	
+		
+	// contact with other dead cell 
+	map_index++; 
+	signal_to_int["contact with other dead cell"] = map_index; 
+	int_to_signal[map_index] = "contact with other dead cell"; 
+		// synonym 
+	signal_to_int["contact with other dead cells"] = map_index; 	
+
 	// contact with basement membrane 
 	map_index++; 
 	signal_to_int["contact with basement membrane"] = map_index; 
@@ -192,7 +213,20 @@ void setup_signal_behavior_dictionaries( void )
 	map_index++; 
 	signal_to_int["damage"] = map_index; 
 	int_to_signal[map_index] = "damage"; 
-	
+
+	map_index++; 
+	signal_to_int["damage delivered"] = map_index; 
+	int_to_signal[map_index] = "damage delivered"; 
+	// synonym 
+	signal_to_int["total damage delivered"] = map_index; 	
+
+	// attacking yes/no?  
+	map_index++; 
+	signal_to_int["attacking"] = map_index; 
+	int_to_signal[map_index] = "attacking"; 
+	// synonym 
+	signal_to_int["is attacking"] = map_index; 
+
 	// live / dead state 
 	map_index++; 
 	signal_to_int["dead"] = map_index; 
@@ -410,13 +444,31 @@ void setup_signal_behavior_dictionaries( void )
 	behavior_to_int["cell-membrane repulsion"] = map_index; 
 
 	map_index++; 
-	map_name = "phagocytose dead cell"; 
+	map_name = "phagocytose apoptotic cell"; 
 	behavior_to_int[ map_name ] = map_index;
 	int_to_behavior[map_index] = map_name; 
 
-		// synonym "phagocytosis of dead cell";
-		behavior_to_int[ "phagocytosis of dead cell" ] = map_index; 
-		behavior_to_int[ "phagocytosis of dead cells" ] = map_index; 
+		// synonym "phagocytosis of apoptotic cell";
+		behavior_to_int[ "phagocytosis of apoptotic cell" ] = map_index; 
+		behavior_to_int[ "phagocytosis of apoptotic cells" ] = map_index; 
+
+	map_index++; 
+	map_name = "phagocytose necrotic cell"; 
+	behavior_to_int[ map_name ] = map_index;
+	int_to_behavior[map_index] = map_name; 
+
+		// synonym "phagocytosis of necrotic cell";
+		behavior_to_int[ "phagocytosis of necrotic cell" ] = map_index; 
+		behavior_to_int[ "phagocytosis of necrotic cells" ] = map_index; 
+
+	map_index++; 
+	map_name = "phagocytose other dead cell"; 
+	behavior_to_int[ map_name ] = map_index;
+	int_to_behavior[map_index] = map_name; 
+
+		// synonym "phagocytosis of other dead cell";
+		behavior_to_int[ "phagocytosis of other dead cell" ] = map_index; 
+		behavior_to_int[ "phagocytosis of other dead cells" ] = map_index; 
 	
 	// phagocytosis of each live cell type 
 	for( int i=0; i < n ; i++ )
@@ -462,18 +514,39 @@ void setup_signal_behavior_dictionaries( void )
 		behavior_to_int[temp] = map_index; 
 	}	
 	
-	// transformation 
+	// transformation / transition 
 	for( int i=0; i < n ; i++ )
 	{
 		map_index++; 
 		Cell_Definition* pCD = cell_definitions_by_type[i]; 
-		std::string temp =  "transform to " + pCD->name; 
+		// std::string temp =  "transform to " + pCD->name; 
+		std::string temp =  "transition to " + pCD->name; 
 		behavior_to_int[temp] = map_index; 
 		int_to_behavior[map_index] = temp; 
+
+
 		// synonym 
 		temp = "transform to cell type " + std::to_string(pCD->type); 
 		behavior_to_int[temp] = map_index; 
+
+		temp = "transform to " + pCD->name; 
+		behavior_to_int[temp] = map_index; 
+
+		temp = "transition to cell type " + std::to_string(pCD->type); 
+		behavior_to_int[temp] = map_index; 
+
+
 	}	
+
+	// asymmetic division
+	for( int i=0; i < n ; i++ )
+	{
+		map_index++;
+		Cell_Definition* pCD = cell_definitions_by_type[i];
+		std::string temp =  "asymmetric division to " + pCD->name;
+		behavior_to_int[temp] = map_index;
+		int_to_behavior[map_index] = temp;
+	}
 
 	// custom behaviors
 	for( int nc=0 ; nc < cell_defaults.custom_data.variables.size() ; nc++ )
@@ -531,6 +604,26 @@ void setup_signal_behavior_dictionaries( void )
 	behavior_to_int[map_name ] = map_index;
 	int_to_behavior[map_index] = map_name; 
 
+	map_index++; 
+	map_name = "attack damage rate";
+	behavior_to_int[map_name ] = map_index;
+	int_to_behavior[map_index] = map_name; 
+
+	map_index++; 
+	map_name = "attack duration";
+	behavior_to_int[map_name ] = map_index;
+	int_to_behavior[map_index] = map_name; 
+
+	map_index++; 
+	map_name = "damage rate";
+	behavior_to_int[map_name ] = map_index;
+	int_to_behavior[map_index] = map_name; 
+
+	map_index++; 
+	map_name = "damage repair rate";
+	behavior_to_int[map_name ] = map_index;
+	int_to_behavior[map_index] = map_name; 
+
 	/* add new behaviors above this line */
 
     // resize scales; 
@@ -569,12 +662,23 @@ void display_signal_dictionary( void )
 
 
 void display_signal_dictionary_with_synonyms( void )
-{
+{ display_signal_dictionary_with_synonyms( std::cout ); }
+/*
 	std::cout << "Signals (with synonyms): " << std::endl 
 			  << "=======================" << std::endl; 
 	for( auto it = signal_to_int.begin() ; it != signal_to_int.end() ; it++ )
 	{ std::cout << it->second << " : " << it->first << std::endl; }
 	std::cout << std::endl << std::endl;  	
+    return; 
+*/
+
+void display_signal_dictionary_with_synonyms( std::ostream& os )
+{
+	os << "Signals (with synonyms): " << std::endl 
+	   << "=======================" << std::endl; 
+	for( auto it = signal_to_int.begin() ; it != signal_to_int.end() ; it++ )
+	{ os << it->second << " : " << it->first << std::endl; }
+	os << std::endl << std::endl;  	
     return; 
 }
 
@@ -595,15 +699,26 @@ void display_behavior_dictionary( void )
 	return; 
 }
 
-void display_response_dictionary_with_synonyms( void )
+void display_behavior_dictionary_with_synonyms( std::ostream& os )
 {
+	os << "Behaviors (with synonyms): " << std::endl 
+  	   << "=========================" << std::endl; 
+	for( auto it = behavior_to_int.begin() ; it != behavior_to_int.end() ; it++ )
+	{ os << it->second << " : " << it->first << std::endl; }
+	os << std::endl << std::endl;  	
+    return; 
+}
+
+void display_behavior_dictionary_with_synonyms( void )
+{ display_behavior_dictionary_with_synonyms( std::cout ); return; }
+/*
 	std::cout << "Behaviors (with synonyms): " << std::endl 
 			  << "=========================" << std::endl; 
 	for( auto it = behavior_to_int.begin() ; it != behavior_to_int.end() ; it++ )
 	{ std::cout << it->second << " : " << it->first << std::endl; }
 	std::cout << std::endl << std::endl;  	
     return; 
-}
+*/	
 
 int find_signal_index( std::string signal_name )
 {
@@ -691,18 +806,31 @@ std::vector<double> get_signals( Cell* pCell )
 	// physical contact with cells (of each type) 
 		// increment signals 
 	int dead_cells = 0; 
+	int apop_cells = 0;
+	int necro_cells = 0; 
+	int other_dead_cells = 0; 
 	int live_cells = 0; 
 	static int contact_ind = find_signal_index( "contact with " + cell_definitions_by_type[0]->name ); 
 	for( int i=0; i < pCell->state.neighbors.size(); i++ )
 	{
 		Cell* pC = pCell->state.neighbors[i]; 
 		if( pC->phenotype.death.dead == true )
-		{ dead_cells++; } 
+		{
+			dead_cells++; 
+			if(pC->phenotype.cycle.current_phase().code == PhysiCell_constants::apoptotic )
+			{ apop_cells++; }
+
+			if( pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic_swelling || 
+				pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic_lysed || 
+				pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic )
+			{ necro_cells++; }	
+		} 
 		else
 		{ live_cells++; } 
 		int nCT = cell_definition_indices_by_type[pC->type]; 
 		signals[contact_ind+nCT] += 1; 
 	}
+	other_dead_cells = dead_cells - apop_cells - necro_cells; 
 
 	// physical contact with live cells 
 	static int live_contact_ind = find_signal_index( "contact with live cell"); 
@@ -712,13 +840,36 @@ std::vector<double> get_signals( Cell* pCell )
 	static int dead_contact_ind = find_signal_index( "contact with dead cell"); 
 	signals[dead_contact_ind] = dead_cells; 
 
+	// physical contact with apoptotic cells 
+	static int apop_contact_ind = find_signal_index( "contact with apoptotic cell"); 
+	signals[apop_contact_ind] = apop_cells; 
+
+	// physical contact with necrotic cells 
+	static int necro_contact_ind = find_signal_index( "contact with necrotic cell"); 
+	signals[necro_contact_ind] = necro_cells; 
+
+	// physical contact with other dead cells 
+	static int other_dead_contact_ind = find_signal_index( "contact with other dead cell"); 
+	signals[other_dead_contact_ind] = other_dead_cells; 
+
+
 	// physical contact with basement membrane (not implemented) 
 	static int BM_contact_ind = find_signal_index( "contact with basement membrane"); 
 	signals[BM_contact_ind] = (int) pCell->state.contact_with_basement_membrane; 
 
 	// damage
 	static int damage_ind = find_signal_index( "damage"); 
-	signals[damage_ind] = pCell->state.damage; 
+	signals[damage_ind] = pCell->phenotype.cell_integrity.damage; 
+
+	// damage delivered
+	static int damage_deliv_ind = find_signal_index( "damage delivered"); 
+	signals[damage_deliv_ind] = pCell->phenotype.cell_interactions.total_damage_delivered; 
+
+	// attacking? 
+	static int attacking_ind = find_signal_index( "attacking"); 
+	signals[attacking_ind] = 0; 
+	if( pCell->phenotype.cell_interactions.pAttackTarget )
+	{ signals[attacking_ind] = 1; }
 
 	// live / dead state 
 	static int dead_ind = find_signal_index( "dead" ); 
@@ -774,22 +925,41 @@ std::vector<double> get_cell_contact_signals( Cell* pCell )
 	static int m = microenvironment.number_of_densities(); 
 	static int n = cell_definition_indices_by_name.size(); 
 
-	std::vector<double> output( n+2 , 0.0 ); 
+	std::vector<double> output( n+2+3 , 0.0 ); 
 	// process all neighbors 
 	int dead_cells = 0; 
 	int live_cells = 0; 
+    int apop_cells = 0;
+    int necro_cells = 0; 
+    int other_dead_cells = 0; 
+
 	for( int i=0; i < pCell->state.neighbors.size(); i++ )
 	{
 		Cell* pC = pCell->state.neighbors[i]; 
 		if( pC->phenotype.death.dead == true )
-		{ dead_cells++; } 
+		{
+			dead_cells++; 
+            if(pC->phenotype.cycle.current_phase().code == PhysiCell_constants::apoptotic )
+            { apop_cells++; }
+
+            if( pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic_swelling || 
+                pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic_lysed || 
+                pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic )
+            { necro_cells++; }  	
+		} 
 		else
 		{ live_cells++; } 
 		int nCT = cell_definition_indices_by_type[pC->type]; 
 		output[nCT] += 1; 
 	}
+    other_dead_cells = dead_cells - apop_cells - necro_cells; 
+
 	output[n] = live_cells; 
 	output[n+1] = dead_cells; 
+
+	output[n+2] = apop_cells; 
+	output[n+3] = necro_cells; 
+	output[n+4] = other_dead_cells; 
 
 	// rescale 
 	std::string search_for = "contact with " + cell_definitions_by_type[0]->name; 
@@ -900,17 +1070,29 @@ double get_single_signal( Cell* pCell, int index )
 		std::vector<int> counts( n , 0 ); 
 		// process all neighbors 
 		int dead_cells = 0; 
+		int apop_cells = 0;
+		int necro_cells = 0; 
+		int other_dead_cells = 0; 
 		int live_cells = 0; 
 		for( int i=0; i < pCell->state.neighbors.size(); i++ )
 		{
 			Cell* pC = pCell->state.neighbors[i]; 
 			if( pC->phenotype.death.dead == true )
-			{ dead_cells++; } 
+			{
+				dead_cells++;
+				if(pC->phenotype.cycle.current_phase().code == PhysiCell_constants::apoptotic )
+				{ apop_cells++; }
+				if( pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic_swelling || 
+					pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic_lysed || 
+					pC->phenotype.cycle.current_phase().code == PhysiCell_constants::necrotic )
+				{ necro_cells++; }  				
+			} 
 			else
 			{ live_cells++; } 
 			int nCT = cell_definition_indices_by_type[pC->type]; 
 			counts[nCT] += 1; 
 		}
+		other_dead_cells = dead_cells - apop_cells - necro_cells; 		
 
 		if( index < contact_ind + n )
 		{
@@ -928,9 +1110,37 @@ double get_single_signal( Cell* pCell, int index )
 		}
 
 		static int dead_contact_ind = find_signal_index( "contact with dead cell"); 
-		// index == dead_contact_ind
-		out = dead_cells; 
-		out /= signal_scales[index]; 
+		if( index == dead_contact_ind )
+		{
+			out = dead_cells; 
+			out /= signal_scales[index]; 
+			return out; 
+		}
+
+		static int apop_contact_ind = find_signal_index( "contact with apoptotic cell"); 
+		if( index == apop_contact_ind )
+		{
+			out = apop_cells; 
+			out /= signal_scales[index]; 
+			return out; 
+		}
+
+		static int necro_contact_ind = find_signal_index( "contact with necrotic cell"); 
+		if( index == necro_contact_ind )
+		{
+			out = necro_cells; 
+			out /= signal_scales[index]; 
+			return out; 
+		}
+
+		static int other_dead_contact_ind = find_signal_index( "contact with other dead cell"); 
+		if( index == other_dead_contact_ind )
+		{
+			out = other_dead_cells; 
+			out /= signal_scales[index]; 
+			return out; 
+		}
+
 		return out; 
 	}
 
@@ -947,7 +1157,16 @@ double get_single_signal( Cell* pCell, int index )
 	static int damage_ind = find_signal_index( "damage"); 
 	if( index == damage_ind )
 	{
-		out = pCell->state.damage; 
+		out = pCell->phenotype.cell_integrity.damage; 
+		out /= signal_scales[index]; 
+		return out; 
+	} 
+
+	// damage delivered
+	static int damage_deliv_ind = find_signal_index( "damage delivered"); 
+	if( index == damage_deliv_ind )
+	{
+		out = pCell->phenotype.cell_interactions.total_damage_delivered ; 
 		out /= signal_scales[index]; 
 		return out; 
 	} 
@@ -967,6 +1186,16 @@ double get_single_signal( Cell* pCell, int index )
 	{
 		out = pCell->state.total_attack_time;     
 		out /= signal_scales[index]; 
+		return out; 
+	} 
+
+	// attacking? yes or no 
+    static int attacking_ind = find_signal_index( "attacking"); 
+	if( index == attacking_ind )
+	{
+		out = 0; 
+		if( pCell->phenotype.cell_interactions.pAttackTarget ) 
+		{ out = 1; }
 		return out; 
 	} 
 
@@ -1150,9 +1379,17 @@ void set_behaviors( Cell* pCell , std::vector<double> parameters )
 	static int cbr_index = find_behavior_index("cell-BM repulsion"); 
 	pCell->phenotype.mechanics.cell_BM_repulsion_strength = parameters[cbr_index]; 
 
-	// dead cell phagocytosis
-	static int dead_phag_index = find_behavior_index("phagocytose dead cell"); 
-	pCell->phenotype.cell_interactions.dead_phagocytosis_rate = parameters[dead_phag_index]; 
+	// apoptotic cell phagocytosis
+	static int apop_phag_index = find_behavior_index("phagocytose apoptotic cell"); 
+	pCell->phenotype.cell_interactions.apoptotic_phagocytosis_rate = parameters[apop_phag_index]; 
+
+	// necrotic cell phagocytosis
+	static int necro_phag_index = find_behavior_index("phagocytose necrotic cell"); 
+	pCell->phenotype.cell_interactions.necrotic_phagocytosis_rate = parameters[necro_phag_index]; 
+
+	// other dead cell phagocytosis
+	static int other_dead_phag_index = find_behavior_index("phagocytose other dead cell"); 
+	pCell->phenotype.cell_interactions.other_dead_phagocytosis_rate = parameters[other_dead_phag_index]; 
 
     // phagocytosis of each live cell type 
 	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
@@ -1177,6 +1414,12 @@ void set_behaviors( Cell* pCell , std::vector<double> parameters )
 	std::copy(  parameters.begin()+first_transformation_index , 
 				parameters.begin()+first_transformation_index+n , 
 				pCell->phenotype.cell_transformations.transformation_rates.begin() ); 	
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	std::copy(  parameters.begin()+first_asymmetric_division_index , 
+				parameters.begin()+first_asymmetric_division_index+n , 
+				pCell->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities.begin() );
 
 	// custom behaviors
 	static int first_custom_ind = find_behavior_index( "custom 0"); 
@@ -1210,6 +1453,22 @@ void set_behaviors( Cell* pCell , std::vector<double> parameters )
 	// maximum number of cell attachments 
 	static int max_attachments_ind = find_behavior_index( "maximum number of cell attachments"); 
 	pCell->phenotype.mechanics.maximum_number_of_attachments = (int) parameters[max_attachments_ind];
+
+	// cell damage rate (for effector attack)
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	pCell->phenotype.cell_interactions.attack_damage_rate = parameters[attack_damage_rate_ind]; 
+
+	// attack duration (for effector attack)
+	static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	pCell->phenotype.cell_interactions.attack_duration = parameters[attack_duration_ind]; 
+
+	// damage rate (non-effector)
+	static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	pCell->phenotype.cell_integrity.damage_rate = parameters[damage_rate_ind]; 
+
+	// damage repair rate (non-effector)
+	static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	pCell->phenotype.cell_integrity.damage_repair_rate = parameters[damage_repair_rate_ind]; 
 
 	return; 
 }
@@ -1250,7 +1509,7 @@ void set_single_behavior( Cell* pCell, int index , double parameter )
 
 	// cycle entry (exit from phase 0) and exit from up to 5 more phases 
 	static int first_cycle_index = find_behavior_index("exit from cycle phase 0" ); //  4*m; 
-	if( index >= first_cycle_index && index < first_cycle_index+6 )
+	if( index >= first_cycle_index && index < first_cycle_index+6 && !pCell->phenotype.death.dead )
 	{
 		int max_cycle_index = pCell->phenotype.cycle.model().phases.size(); 
 		if( index < first_cycle_index + max_cycle_index )
@@ -1329,10 +1588,20 @@ void set_single_behavior( Cell* pCell, int index , double parameter )
 	if( index == cbr_index )
 	{ pCell->phenotype.mechanics.cell_BM_repulsion_strength = parameter; return; } 
 
-	// dead cell phagocytosis
-	static int dead_phago_index = find_behavior_index( "phagocytose dead cell" ); 
-	if( index == dead_phago_index )
-	{ pCell->phenotype.cell_interactions.dead_phagocytosis_rate = parameter; return; } 
+	// apoptotic cell phagocytosis
+	static int apop_phago_index = find_behavior_index( "phagocytose apoptotic cell" ); 
+	if( index == apop_phago_index )
+	{ pCell->phenotype.cell_interactions.apoptotic_phagocytosis_rate = parameter; return; } 
+
+	// necrotic cell phagocytosis
+	static int necro_phago_index = find_behavior_index( "phagocytose necrotic cell" ); 
+	if( index == necro_phago_index )
+	{ pCell->phenotype.cell_interactions.necrotic_phagocytosis_rate = parameter; return; } 
+
+	// other dead cell phagocytosis
+	static int other_dead_phago_index = find_behavior_index( "phagocytose other dead cell" ); 
+	if( index == other_dead_phago_index )
+	{ pCell->phenotype.cell_interactions.other_dead_phagocytosis_rate = parameter; return; } 
  
     // phagocytosis of each live cell type 
 	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
@@ -1353,6 +1622,11 @@ void set_single_behavior( Cell* pCell, int index , double parameter )
 	static int first_transformation_index = find_behavior_index( "transform to " + cell_definitions_by_type[0]->name ); 
 	if( index >= first_transformation_index && index < first_transformation_index + n )
 	{ pCell->phenotype.cell_transformations.transformation_rates[index-first_transformation_index] = parameter; return; } 
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	if( index >= first_asymmetric_division_index && index < first_asymmetric_division_index + n )
+	{ pCell->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities[index-first_asymmetric_division_index] = parameter; return; }
 
 	// custom behavior
 	static int first_custom_ind = find_behavior_index( "custom 0"); 
@@ -1390,6 +1664,26 @@ void set_single_behavior( Cell* pCell, int index , double parameter )
 	static int max_attachments_ind = find_behavior_index( "maximum number of cell attachments"); 
 	if( index == max_attachments_ind )
 	{ pCell->phenotype.mechanics.maximum_number_of_attachments = (int) parameter; }
+
+	// cell damage rate (for effector attack)
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	if( index == attack_damage_rate_ind )
+	{ pCell->phenotype.cell_interactions.attack_damage_rate = parameter; }
+
+    // attack duration (for effector attack)
+    static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	if( index == attack_duration_ind )
+    { pCell->phenotype.cell_interactions.attack_duration = parameter; } 
+
+    // damage rate (non-effector)
+    static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	if( index == damage_rate_ind )
+    { pCell->phenotype.cell_integrity.damage_rate = parameter; } 
+
+    // damage repair rate (non-effector)
+    static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	if( index == damage_repair_rate_ind )
+    { pCell->phenotype.cell_integrity.damage_repair_rate = parameter; } 
 
 	return; 
 }
@@ -1505,9 +1799,17 @@ std::vector<double> get_behaviors( Cell* pCell )
 	static int cbr_index = find_behavior_index("cell-BM repulsion"); 
 	parameters[cbr_index] = pCell->phenotype.mechanics.cell_BM_repulsion_strength; 
 
-	// dead cell phagocytosis
-	static int dead_phag_index = find_behavior_index("phagocytose dead cell"); 
-	parameters[dead_phag_index] = pCell->phenotype.cell_interactions.dead_phagocytosis_rate; 
+	// apoptotic cell phagocytosis
+	static int apop_phag_index = find_behavior_index("phagocytose apoptotic cell"); 
+	parameters[apop_phag_index] = pCell->phenotype.cell_interactions.apoptotic_phagocytosis_rate; 
+
+	// necrotic cell phagocytosis
+	static int necro_phag_index = find_behavior_index("phagocytose necrotic cell"); 
+	parameters[necro_phag_index] = pCell->phenotype.cell_interactions.necrotic_phagocytosis_rate; 
+
+	// other dead cell phagocytosis
+	static int other_dead_phag_index = find_behavior_index("phagocytose other dead cell"); 
+	parameters[other_dead_phag_index] = pCell->phenotype.cell_interactions.other_dead_phagocytosis_rate; 
 
     // phagocytosis of each live cell type 
 	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
@@ -1532,6 +1834,12 @@ std::vector<double> get_behaviors( Cell* pCell )
 	std::copy(  pCell->phenotype.cell_transformations.transformation_rates.begin(), 
 				pCell->phenotype.cell_transformations.transformation_rates.end(), 
 				parameters.begin()+first_transformation_index ); 	
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	std::copy(  pCell->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities.begin(), 
+				pCell->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities.end(), 
+				parameters.begin()+first_asymmetric_division_index );
 
 	// custom behavior
 	static int first_custom_ind = find_behavior_index( "custom 0"); 
@@ -1566,6 +1874,22 @@ std::vector<double> get_behaviors( Cell* pCell )
 	// maximum number of cell attachments 
 	static int max_attachments_ind = find_behavior_index( "maximum number of cell attachments"); 
 	parameters[max_attachments_ind] = pCell->phenotype.mechanics.maximum_number_of_attachments; 
+
+	// attack get damage rate 
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	parameters[attack_damage_rate_ind] = pCell->phenotype.cell_interactions.attack_damage_rate; 
+
+	// get attack duration
+	static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	parameters[attack_duration_ind] = pCell->phenotype.cell_interactions.attack_duration; 
+
+	// get damage rate 
+	static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	parameters[damage_rate_ind] = pCell->phenotype.cell_integrity.damage_rate; 
+	
+	// get damage repair rate 
+	static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	parameters[damage_repair_rate_ind] = pCell->phenotype.cell_integrity.damage_repair_rate; 
 
 	return parameters; 
 }
@@ -1690,10 +2014,20 @@ double get_single_behavior( Cell* pCell , int index )
 	if( index == cbr_index )
 	{ return pCell->phenotype.mechanics.cell_BM_repulsion_strength; }
 
-	// dead cell phagocytosis
-	static int dead_phag_index = find_behavior_index("phagocytose dead cell" ); 
-	if( index == dead_phag_index )
-	{ return pCell->phenotype.cell_interactions.dead_phagocytosis_rate; }
+	// apoptotic cell phagocytosis
+	static int apop_phag_index = find_behavior_index("phagocytose apoptotic cell" ); 
+	if( index == apop_phag_index )
+	{ return pCell->phenotype.cell_interactions.apoptotic_phagocytosis_rate; }
+
+	// necrotic cell phagocytosis
+	static int necro_phag_index = find_behavior_index("phagocytose necrotic cell" ); 
+	if( index == necro_phag_index )
+	{ return pCell->phenotype.cell_interactions.necrotic_phagocytosis_rate; }
+
+	// other dead cell phagocytosis
+	static int other_dead_phag_index = find_behavior_index("phagocytose other dead cell" ); 
+	if( index == other_dead_phag_index )
+	{ return pCell->phenotype.cell_interactions.other_dead_phagocytosis_rate; }
 
     // phagocytosis of each live cell type 
 	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
@@ -1714,6 +2048,11 @@ double get_single_behavior( Cell* pCell , int index )
 	static int first_transformation_index = find_behavior_index( "transform to " + cell_definitions_by_type[0]->name ); 
 	if( index >= first_transformation_index && index < first_transformation_index+n )
 	{ return pCell->phenotype.cell_transformations.transformation_rates[index-first_transformation_index]; } 
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	if( index >= first_asymmetric_division_index && index < first_asymmetric_division_index+n )
+	{ return pCell->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities[index-first_asymmetric_division_index]; }
 
 	// custom behavior
 	static int first_custom_ind = find_behavior_index( "custom 0"); 
@@ -1752,6 +2091,26 @@ double get_single_behavior( Cell* pCell , int index )
 	static int max_attachments_ind = find_behavior_index( "maximum number of cell attachments"); 
 	if( index == max_attachments_ind )
 	{ return pCell->phenotype.mechanics.maximum_number_of_attachments; }
+
+	// get attack damage rate 
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	if( index == attack_damage_rate_ind )
+	{ return pCell->phenotype.cell_interactions.attack_damage_rate; }
+
+	// get attack duration 
+	static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	if( index == attack_duration_ind )
+	{ return pCell->phenotype.cell_interactions.attack_duration; }
+
+	// get damage rate 
+	static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	if( index == damage_rate_ind )
+	{ return pCell->phenotype.cell_integrity.damage_rate; }
+
+	// get damage repair rate 
+	static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	if( index == damage_repair_rate_ind )
+	{ return pCell->phenotype.cell_integrity.damage_repair_rate; }
 
 	return -1; 
 }
@@ -1805,7 +2164,6 @@ std::vector<double> get_base_behaviors( Cell* pCell )
 	std::copy(  pCD->phenotype.secretion.secretion_rates.begin(), 
 				pCD->phenotype.secretion.secretion_rates.end(), 
 				parameters.begin()+first_secretion_index ); 
-
 
 	// next m entries are secretion targets
 	static int first_secretion_target_index = find_behavior_index( microenvironment.density_names[0] + " secretion target" ); // m; 
@@ -1897,9 +2255,17 @@ std::vector<double> get_base_behaviors( Cell* pCell )
 	static int cbr_index = find_behavior_index("cell-BM repulsion"); 
 	parameters[cbr_index] = pCD->phenotype.mechanics.cell_BM_repulsion_strength; 
 
-	// dead cell phagocytosis
-	static int dead_phag_index = find_behavior_index("phagocytose dead cell"); 
-	parameters[dead_phag_index] = pCD->phenotype.cell_interactions.dead_phagocytosis_rate; 
+	// apoptotic cell phagocytosis
+	static int apop_phag_index = find_behavior_index("phagocytose apoptotic cell"); 
+	parameters[apop_phag_index] = pCD->phenotype.cell_interactions.apoptotic_phagocytosis_rate; 
+
+	// necrotic cell phagocytosis
+	static int necro_phag_index = find_behavior_index("phagocytose necrotic cell"); 
+	parameters[necro_phag_index] = pCD->phenotype.cell_interactions.necrotic_phagocytosis_rate; 
+
+	// other dead cell phagocytosis
+	static int other_dead_phag_index = find_behavior_index("phagocytose other dead cell"); 
+	parameters[other_dead_phag_index] = pCD->phenotype.cell_interactions.other_dead_phagocytosis_rate; 
 
     // phagocytosis of each live cell type 
 	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
@@ -1924,6 +2290,12 @@ std::vector<double> get_base_behaviors( Cell* pCell )
 	std::copy(  pCD->phenotype.cell_transformations.transformation_rates.begin(), 
 				pCD->phenotype.cell_transformations.transformation_rates.end(), 
 				parameters.begin()+first_transformation_index ); 	
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	std::copy(  pCD->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities.begin(), 
+				pCD->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities.end(), 
+				parameters.begin()+first_asymmetric_division_index );
 
 	// custom behavior
 	static int first_custom_ind = find_behavior_index( "custom 0"); 
@@ -1959,6 +2331,22 @@ std::vector<double> get_base_behaviors( Cell* pCell )
 	// maximum number of cell attachments 
 	static int max_attachments_ind = find_behavior_index( "maximum number of cell attachments"); 
 	parameters[max_attachments_ind] = pCD->phenotype.mechanics.maximum_number_of_attachments; 
+
+	// cell damage rate (effector attack)
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	parameters[attack_damage_rate_ind] = pCD->phenotype.cell_interactions.attack_damage_rate; 
+
+	// attack duration
+	static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	parameters[attack_duration_ind] = pCD->phenotype.cell_interactions.attack_duration; 
+
+	//  damage rate (non-attack)
+	static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	parameters[damage_rate_ind] = pCD->phenotype.cell_integrity.damage_rate; 
+
+	//  damage repair rate 
+	static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	parameters[damage_repair_rate_ind] = pCD->phenotype.cell_integrity.damage_repair_rate; 
 
 	return parameters; 
 }
@@ -2085,10 +2473,20 @@ double get_single_base_behavior( Cell* pCell , int index )
 	if( index == cbr_index )
 	{ return pCD->phenotype.mechanics.cell_BM_repulsion_strength; }
 
-	// dead cell phagocytosis
-	static int dead_phag_index = find_behavior_index("phagocytose dead cell" ); 
-	if( index == dead_phag_index )
-	{ return pCD->phenotype.cell_interactions.dead_phagocytosis_rate; }
+	// apoptotic cell phagocytosis
+	static int apop_phag_index = find_behavior_index("phagocytose apoptotic cell" ); 
+	if( index == apop_phag_index )
+	{ return pCD->phenotype.cell_interactions.apoptotic_phagocytosis_rate; }
+
+	// necrotic cell phagocytosis
+	static int necro_phag_index = find_behavior_index("phagocytose necrotic cell" ); 
+	if( index == necro_phag_index )
+	{ return pCD->phenotype.cell_interactions.necrotic_phagocytosis_rate; }
+
+	// other dead cell phagocytosis
+	static int other_dead_phag_index = find_behavior_index("phagocytose other dead cell" ); 
+	if( index == other_dead_phag_index )
+	{ return pCD->phenotype.cell_interactions.other_dead_phagocytosis_rate; }
 
     // phagocytosis of each live cell type 
 	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
@@ -2109,6 +2507,11 @@ double get_single_base_behavior( Cell* pCell , int index )
 	static int first_transformation_index = find_behavior_index( "transform to " + cell_definitions_by_type[0]->name ); 
 	if( index >= first_transformation_index && index < first_transformation_index + n )
 	{ return pCD->phenotype.cell_transformations.transformation_rates[index-first_transformation_index]; } 
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	if( index >= first_asymmetric_division_index && index < first_asymmetric_division_index + n )
+	{ return pCD->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities[index-first_asymmetric_division_index]; }
 
 	// custom behavior
 	static int first_custom_ind = find_behavior_index( "custom 0"); 
@@ -2132,6 +2535,227 @@ double get_single_base_behavior( Cell* pCell , int index )
 	if( start_immunogenicity_ind > -1 && index >= start_immunogenicity_ind && index < max_immunogenicity_ind )
 	{ return pCD->phenotype.cell_interactions.immunogenicities[index-start_immunogenicity_ind]; }
 
+	// set cell attachment rate  
+	static int attachment_rate_ind = find_behavior_index( "cell attachment rate"); 
+	if( index == attachment_rate_ind )
+	{ return pCD->phenotype.mechanics.attachment_rate; }
+
+	// set cell detachment rate  
+	static int detachment_rate_ind = find_behavior_index( "cell detachment rate"); 
+	if( index == detachment_rate_ind )
+	{ return pCD->phenotype.mechanics.detachment_rate; }
+
+	// maximum number of cell attachments 
+	static int max_attachments_ind = find_behavior_index( "maximum number of cell attachments"); 
+	if( index == max_attachments_ind )
+	{ return pCD->phenotype.mechanics.maximum_number_of_attachments; }
+
+	// cell attack damage rate (effector attack)
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	if( index == attack_damage_rate_ind )
+	{ return pCD->phenotype.cell_interactions.attack_damage_rate; }
+
+	// cell attack duration
+	static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	if( index == attack_duration_ind )
+	{ return pCD->phenotype.cell_interactions.attack_duration; }
+
+	// cell damage rate (non-effector)
+	static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	if( index == damage_rate_ind )
+	{ return pCD->phenotype.cell_integrity.damage_rate; }
+
+	// cell damage repair rate (non-effector)
+	static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	if( index == damage_repair_rate_ind )
+	{ return pCD->phenotype.cell_integrity.damage_repair_rate; }
+
+	return -1; 
+}
+
+double get_single_base_behavior( Cell_Definition* pCD , int index )
+{
+	static int m = microenvironment.number_of_densities(); 
+	static int n = cell_definition_indices_by_name.size(); 
+
+	// Cell_Definition* pCD = find_cell_definition( pCell->type_name ); 	
+
+	if( index < 0 )
+	{
+		std::cout << "Warning: attempted to get behavior with unknown index " << index << std::endl	
+				  << "         I'm ignoring it, but you should fix it!" << std::endl; 
+		return 0.0; 
+	}
+
+	// substrate-related behaviors 
+
+	// first m entries are secretion 
+	static int first_secretion_index = find_behavior_index( microenvironment.density_names[0] + " secretion" ); // 0; 
+	if( index >= first_secretion_index && index < first_secretion_index + m )
+	{ return pCD->phenotype.secretion.secretion_rates[index-first_secretion_index]; }
+
+	// next m entries are secretion targets
+	static int first_secretion_target_index = find_behavior_index( microenvironment.density_names[0] + " secretion target" ); // m; 
+	if( index >= first_secretion_target_index && index < first_secretion_target_index + m )
+	{ return pCD->phenotype.secretion.saturation_densities[index-first_secretion_target_index]; }
+
+	// next m entries are uptake rates
+	static int first_uptake_index = find_behavior_index( microenvironment.density_names[0] + " uptake" );  // 2*m; 
+	if( index >= first_uptake_index && index < first_uptake_index + m )
+	{ return pCD->phenotype.secretion.uptake_rates[index-first_uptake_index]; }
+
+	// next m entries are net export rates 
+	static int first_export_index = find_behavior_index( microenvironment.density_names[0] + " export" ); //  3*m; 
+	if( index >= first_export_index && index < first_export_index + m )
+	{ return pCD->phenotype.secretion.net_export_rates[index-first_export_index]; }
+
+	// cycle entry (exit from phase 0) and exit from up to 5 more phases 
+	static int first_cycle_index = find_behavior_index("exit from cycle phase 0" ); //  4*m; 
+	int max_cycle_index = pCD->phenotype.cycle.model().phases.size(); 
+	if( max_cycle_index > 6 )
+	{
+		max_cycle_index = 6; 
+		std::cout << "Warning: Standardized behaviors only support exit rate from the first 6 phases of a cell cycle!" << std::endl 
+		          << "         Ignoring any later phase exit rates." << std::endl; 
+	}
+	if( index >= first_cycle_index && index < first_cycle_index + 6 )
+	{
+		int ind = index - first_cycle_index; 
+		if( ind < max_cycle_index )
+		{ return pCD->phenotype.cycle.data.exit_rate( ind ); }
+		return 0.0; 
+	}
+
+	static int apoptosis_index = pCD->phenotype.death.find_death_model_index( PhysiCell_constants::apoptosis_death_model ); 
+	static int necrosis_index = pCD->phenotype.death.find_death_model_index( PhysiCell_constants::necrosis_death_model ); 
+
+	static int apop_param_index = find_behavior_index( "apoptosis"); 
+	static int necr_param_index = find_behavior_index( "necrosis"); 
+
+	// apoptosis 
+	if( index == apop_param_index )
+	{ return pCD->phenotype.death.rates[apoptosis_index]; }
+
+	// necrosis 
+	if( index == necr_param_index )
+	{ return pCD->phenotype.death.rates[necrosis_index]; }
+
+	// migration speed
+	static int migr_spd_index = find_behavior_index( "migration speed"); 
+	if( index == migr_spd_index )
+	{ return pCD->phenotype.motility.migration_speed; }
+
+	// migration bias 
+	static int migr_bias_index = find_behavior_index( "migration bias"); 
+	if( index == migr_bias_index )
+	{ return pCD->phenotype.motility.migration_bias; }
+
+	// migration persistence time
+	static int migr_pt_index = find_behavior_index( "migration persistence time"); 
+	if( index == migr_pt_index )
+	{ return pCD->phenotype.motility.persistence_time; }
+
+	// chemotactic sensitivities 
+	static int first_chemotaxis_index = find_behavior_index( "chemotactic response to " + microenvironment.density_names[0] ); 
+	if( index >= first_chemotaxis_index && index < first_chemotaxis_index + m )
+	{ return pCD->phenotype.motility.chemotactic_sensitivities[index-first_chemotaxis_index]; }
+
+	// cell-cell adhesion 
+	static int cca_index = find_behavior_index( "cell-cell adhesion" ); 
+	if( index == cca_index )
+	{ return pCD->phenotype.mechanics.cell_cell_adhesion_strength; }
+
+	// cell-cell "springs"
+	static int cca_spring_index = find_behavior_index( "cell-cell adhesion elastic constant" );  
+	if( index == cca_spring_index )
+	{ return pCD->phenotype.mechanics.attachment_elastic_constant; }
+
+    // cell adhesion affinities 
+	static int first_affinity_index = find_behavior_index("adhesive affinity to " + cell_definitions_by_type[0]->name ); 
+	if( index >= first_affinity_index && index < first_affinity_index + n )
+	{ return pCD->phenotype.mechanics.cell_adhesion_affinities[index-first_affinity_index]; }
+
+	// max relative maximum adhesion distance 
+	static int max_adh_index = find_behavior_index("relative maximum adhesion distance" ); 
+	if( index == max_adh_index )
+	{ return pCD->phenotype.mechanics.relative_maximum_adhesion_distance; }
+
+	// cell-cell repulsion 
+	static int ccr_index = find_behavior_index("cell-cell repulsion" ); 
+	if( index == ccr_index )
+	{ return pCD->phenotype.mechanics.cell_cell_repulsion_strength; }
+
+	// cell-BM adhesion 
+	static int cba_index = find_behavior_index("cell-BM adhesion" ); 
+	if( index == cba_index )
+	{ return pCD->phenotype.mechanics.cell_BM_adhesion_strength; }
+	
+	// cell-BM repulsion 
+	static int cbr_index = find_behavior_index("cell-BM repulsion" ); 
+	if( index == cbr_index )
+	{ return pCD->phenotype.mechanics.cell_BM_repulsion_strength; }
+
+	// apoptotic cell phagocytosis
+	static int apop_phag_index = find_behavior_index("phagocytose apoptotic cell" ); 
+	if( index == apop_phag_index )
+	{ return pCD->phenotype.cell_interactions.apoptotic_phagocytosis_rate; }
+
+	// necrotic cell phagocytosis
+	static int necro_phag_index = find_behavior_index("phagocytose necrotic cell" ); 
+	if( index == necro_phag_index )
+	{ return pCD->phenotype.cell_interactions.necrotic_phagocytosis_rate; }
+
+	// other dead cell phagocytosis
+	static int other_dead_phag_index = find_behavior_index("phagocytose other dead cell" ); 
+	if( index == other_dead_phag_index )
+	{ return pCD->phenotype.cell_interactions.other_dead_phagocytosis_rate; }
+
+    // phagocytosis of each live cell type 
+	static int first_phagocytosis_index = find_behavior_index( "phagocytose " + cell_definitions_by_type[0]->name ); 
+	if( index >= first_phagocytosis_index && index < first_phagocytosis_index + n )
+	{ return pCD->phenotype.cell_interactions.live_phagocytosis_rates[index-first_phagocytosis_index]; } 
+
+	// attack of each live cell type 
+	static int first_attack_index = find_behavior_index( "attack " + cell_definitions_by_type[0]->name ); 
+	if( index >= first_attack_index && index < first_attack_index + n )
+	{ return pCD->phenotype.cell_interactions.attack_rates[index-first_attack_index]; } 
+
+	// fusion 
+	static int first_fusion_index = find_behavior_index( "fuse to " + cell_definitions_by_type[0]->name ); 
+	if( index >= first_fusion_index && index < first_fusion_index + n )
+	{ return pCD->phenotype.cell_interactions.fusion_rates[index-first_fusion_index]; } 
+
+ 	// transformation 
+	static int first_transformation_index = find_behavior_index( "transform to " + cell_definitions_by_type[0]->name ); 
+	if( index >= first_transformation_index && index < first_transformation_index + n )
+	{ return pCD->phenotype.cell_transformations.transformation_rates[index-first_transformation_index]; } 
+
+	// asymmetric division
+	static int first_asymmetric_division_index = find_behavior_index( "asymmetric division to " + cell_definitions_by_type[0]->name );
+	if( index >= first_asymmetric_division_index && index < first_asymmetric_division_index + n )
+	{ return pCD->phenotype.cycle.asymmetric_division.asymmetric_division_probabilities[index-first_asymmetric_division_index]; }
+
+	// custom behavior
+	static int first_custom_ind = find_behavior_index( "custom 0"); 
+	static int max_custom_ind = first_custom_ind + pCD->custom_data.variables.size();  
+	if( first_custom_ind >= 0 && index >= first_custom_ind && index < max_custom_ind )
+	{ return pCD->custom_data.variables[index-first_custom_ind].value; }
+
+	// is the cell movable / not movable 
+	static int movable_ind = find_behavior_index( "is_movable"); 
+	if( index == movable_ind )
+	{
+		if( pCD->is_movable == true )
+		{ return 1.0; }
+		else
+		{ return 0.0; }
+	}
+
+	// vector of immunogenicity behaviors 
+	static int start_immunogenicity_ind = find_behavior_index( "immunogenicity to " + cell_definitions_by_type[0]->name ); 
+	static int max_immunogenicity_ind = start_immunogenicity_ind + n; 
+	if( start_immunogenicity_ind > -1 && index >= start_immunogenicity_ind && index < max_immunogenicity_ind )
+	{ return pCD->phenotype.cell_interactions.immunogenicities[index-start_immunogenicity_ind]; }
 
 	// set cell attachment rate  
 	static int attachment_rate_ind = find_behavior_index( "cell attachment rate"); 
@@ -2148,11 +2772,34 @@ double get_single_base_behavior( Cell* pCell , int index )
 	if( index == max_attachments_ind )
 	{ return pCD->phenotype.mechanics.maximum_number_of_attachments; }
 
+	// cell attack damage rate (effector attack)
+	static int attack_damage_rate_ind = find_behavior_index( "attack damage rate"); 
+	if( index == attack_damage_rate_ind )
+	{ return pCD->phenotype.cell_interactions.attack_damage_rate; }
+
+	// cell attack duration (effector attack)
+	static int attack_duration_ind = find_behavior_index( "attack duration"); 
+	if( index == attack_duration_ind )
+	{ return pCD->phenotype.cell_interactions.attack_duration; }
+
+	// damage rate (non-effector)
+	static int damage_rate_ind = find_behavior_index( "damage rate"); 
+	if( index == damage_rate_ind )
+	{ return pCD->phenotype.cell_integrity.damage_rate; }
+
+	// damage repair rate (non-effector)
+	static int damage_repair_rate_ind = find_behavior_index( "damage repair rate"); 
+	if( index == damage_repair_rate_ind )
+	{ return pCD->phenotype.cell_integrity.damage_repair_rate; }
+
 	return -1; 
 }
 
 double get_single_base_behavior( Cell* pCell , std::string name )
 { return get_single_base_behavior(pCell,find_behavior_index(name)); }
+
+double get_single_base_behavior( Cell_Definition* pCD , std::string name )
+{ return get_single_base_behavior(pCD,find_behavior_index(name)); }
 
 std::vector<double> get_base_behaviors( Cell* pCell , std::vector<int> indices )
 {

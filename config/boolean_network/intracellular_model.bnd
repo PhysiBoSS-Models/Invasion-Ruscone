@@ -2,6 +2,12 @@
 // 2) "Nuclear FAK promotes cell proliferation and survival through FERM-enhanced p53 degradation"
 // 3) "Hypoxia-inducible factor 1α promotes primary tumor growth and tumor-initiating cell activity in breast cancer"
 
+Node Pressure {
+  logic = (Pressure);
+  rate_up = @logic ? $u_Pressure : 0.0;
+  rate_down = @logic ? 0.0 : $d_Pressure;
+}
+
 Node Oxy {
   logic = (Oxy);
   rate_up = @logic ? $u_Oxy : 0.0;
@@ -50,7 +56,7 @@ Node Cell_freeze {
 }
 
 Node Cell_growth {
-  logic = ((ERK & !p21) | (AKT1 & AKT2 & PIK3CA)) & !HIF1A; // Tumor in hypoxia condition has more aggressive phenotype
+  logic = ((ERK & !p21) | (AKT1 & AKT2 & PIK3CA)) & !(HIF1A | Pressure); // Tumor in hypoxia condition has more aggressive phenotype
   rate_up = @logic ? $u_Cell_growth : 0.0;
   rate_down = @logic ? 0.0 : $d_Cell_growth;
 }
@@ -101,7 +107,7 @@ Node Neigh {
 }
 
 Node NICD {
-  logic = (!p73 & !p53 & !p63 & !miR34 & !miR200 & (ECM | FAK));
+  logic = (!p73 & !p53 & !miR34 & !miR200 & (ECM | FAK));
   rate_up = @logic ? $u_NICD : 0.0;
   rate_down = @logic ? 0.0 : $d_NICD;
 }
@@ -161,7 +167,7 @@ Node AKT1 {
 }
 
 Node p63 {
-  logic = (!NICD & !AKT2 & !p53 & !AKT1 & DNAdamage & !miR203);
+  logic = (!AKT2 & !p53 & !AKT1 & DNAdamage & !miR203);
   rate_up = @logic ? $u_p63 : 0.0;
   rate_down = @logic ? 0.0 : $d_p63;
 }

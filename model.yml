@@ -1,5 +1,9 @@
 short_name: invasion-ruscone
-version: 1.0.0
-binary: myproj
+version: 2.0.0
+binary: invasion_model
 config: 
   - config/PhysiCell_settings.xml
+  - config/PhysiCell_settings_2D_cluster_migration.xml
+  - config/PhysiCell_settings_2D_single_cell_migration.xml
+  - config/PhysiCell_settings_2D_trail_migration.xml
+  - config/PhysiCell_settings_2D_p63_ki.xml
