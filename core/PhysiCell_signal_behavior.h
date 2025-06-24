@@ -33,7 +33,7 @@
 #                                                                             #
 # BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)     #
 #                                                                             #
-# Copyright (c) 2015-2023, Paul Macklin and the PhysiCell Project             #
+# Copyright (c) 2015-2025, Paul Macklin and the PhysiCell Project             #
 # All rights reserved.                                                        #
 #                                                                             #
 # Redistribution and use in source and binary forms, with or without          #
@@ -95,6 +95,10 @@ void display_behavior_dictionary( std::ostream& os ); // done
 
 void display_signal_dictionary_with_synonyms( void ); // done 
 void display_behavior_dictionary_with_synonyms( void ); // done 
+void display_signal_dictionary_with_synonyms( std::ostream& os ); // done 
+void display_behavior_dictionary_with_synonyms( std::ostream& os ); // done 
+
+
 
 /* signal functions */ 
 
@@ -171,6 +175,9 @@ std::vector<double> get_base_behaviors( Cell* pCell , std::vector<std::string> n
 // get single base behavior (from cell's definition)
 double get_single_base_behavior( Cell* pCell , int index ); // done 
 double get_single_base_behavior( Cell* pCell , std::string name ); // done 
+
+double get_single_base_behavior( Cell_Definition* pCD , std::string name ); 
+
 
 }; 
 
