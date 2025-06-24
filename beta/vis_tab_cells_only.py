@@ -87,7 +87,7 @@ class Vis(QWidget):
         self.figsize_height_svg = basic_length
 
         # self.output_dir = "/Users/heiland/dev/PhysiCell_V.1.8.0_release/output"
-        self.output_dir = "../output"
+        self.output_dir = "./output"
 
         self.customized_output_freq = False
 

@@ -33,7 +33,7 @@
 #                                                                             #
 # BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)     #
 #                                                                             #
-# Copyright (c) 2015-2022, Paul Macklin and the PhysiCell Project             #
+# Copyright (c) 2015-2025, Paul Macklin and the PhysiCell Project             #
 # All rights reserved.                                                        #
 #                                                                             #
 # Redistribution and use in source and binary forms, with or without          #
@@ -159,7 +159,7 @@ void Cell_Container::update_all_cells(double t, double phenotype_dt_ , double me
 		}
 	}
 	
-	if( fabs(time_since_last_cycle-phenotype_dt_ ) < phenotype_dt_tolerance || !initialzed)
+	if( time_since_last_cycle > phenotype_dt_ - 0.5 * diffusion_dt_ || !initialzed )
 	{
 		// Reset the max_radius in each voxel. It will be filled in set_total_volume
 		// It might be better if we calculate it before mechanics each time 
@@ -201,7 +201,7 @@ void Cell_Container::update_all_cells(double t, double phenotype_dt_ , double me
 	double time_since_last_mechanics= t- last_mechanics_time;
 	
 	// if( time_since_last_mechanics>= mechanics_dt || !initialzed)
-	if( fabs(time_since_last_mechanics - mechanics_dt_) < mechanics_dt_tolerance || !initialzed)
+	if( time_since_last_mechanics > mechanics_dt_ - 0.5 * diffusion_dt_ || !initialzed )
 	{
 		if(!initialzed)
 		{
@@ -349,10 +349,12 @@ void Cell_Container::remove_agent_from_voxel(Cell* agent, int voxel_index)
 	{
 		delete_index++; 
 	}
-	// move last item to index location  
-	agent_grid[agent->get_current_mechanics_voxel_index()][delete_index] = agent_grid[agent->get_current_mechanics_voxel_index()][agent_grid[agent->get_current_mechanics_voxel_index()].size()-1 ]; 
-	// shrink the vector
-	agent_grid[agent->get_current_mechanics_voxel_index()].pop_back(); 
+	
+	// move last item to index location
+    agent_grid[voxel_index][delete_index] = agent_grid[voxel_index][agent_grid[voxel_index].size()-1 ];
+    // shrink the vector
+    agent_grid[voxel_index].pop_back();
+    
 	return; 
 }		
 

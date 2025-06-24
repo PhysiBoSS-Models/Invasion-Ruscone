@@ -13,7 +13,7 @@
 #                                                                           #
 # BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)   #
 #                                                                           #
-# Copyright (c) 2015-2017, Paul Macklin and the BioFVM Project              #
+# Copyright (c) 2015-2025, Paul Macklin and the BioFVM Project              #
 # All rights reserved.                                                      #
 #                                                                           #
 # Redistribution and use in source and binary forms, with or without        #
@@ -319,7 +319,7 @@ void randomize( std::vector<double>* v )
 
 /* axpy and related BLAS-type operations */ 
 
-void axpy( std::vector<double>* y, double& a , std::vector<double>& x )
+void axpy( std::vector<double>* y, const double& a , const std::vector<double>& x )
 {
  for( unsigned int i=0; i < (*y).size() ; i++ )
  {
@@ -328,7 +328,7 @@ void axpy( std::vector<double>* y, double& a , std::vector<double>& x )
  return ; 
 }
 
-void axpy( std::vector<double>* y, std::vector<double>& a , std::vector<double>& x )
+void axpy( std::vector<double>* y, const std::vector<double>& a , const std::vector<double>& x )
 {
  for( unsigned int i=0; i < (*y).size() ; i++ )
  {
@@ -337,7 +337,7 @@ void axpy( std::vector<double>* y, std::vector<double>& a , std::vector<double>&
  return; 
 }
 
-void naxpy( std::vector<double>* y, double& a , std::vector<double>& x )
+void naxpy( std::vector<double>* y, const double& a , const std::vector<double>& x )
 {
  for( unsigned int i=0; i < (*y).size() ; i++ )
  {
@@ -346,7 +346,7 @@ void naxpy( std::vector<double>* y, double& a , std::vector<double>& x )
  return ; 
 }
 
-void naxpy( std::vector<double>* y, std::vector<double>& a , std::vector<double>& x )
+void naxpy( std::vector<double>* y, const std::vector<double>& a , const std::vector<double>& x )
 {
  for( unsigned int i=0; i < (*y).size() ; i++ )
  {
@@ -497,5 +497,23 @@ void vector3_to_list( const std::vector<double>& vect , char*& buffer , char del
 	sprintf( buffer, "%.7e%c%.7e%c%.7e", vect[0] , delim, vect[1] , delim , vect[2] );
 	return; 
 }
+
+double dot_product( const std::vector<double>& a , const std::vector<double>& b )
+{
+	double out = 0.0; 
+	for( unsigned int i=0 ; i < a.size() ; i++ )
+	{ out += ( a[i] * b[i] ); }
+	return out; 
+}
+
+std::vector<double> cross_product( const std::vector<double>& a , const std::vector<double>& b )
+{
+	std::vector<double> out( 3, 0.0 ); 
+	out[0] = a[1]*b[2] - a[2]*b[1]; 
+	out[1] = a[2]*b[0] - a[0]*b[2];
+	out[2] = a[0]*b[1] - a[1]*b[0];
+
+	return out; 
+} 
 
 };
