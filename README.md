@@ -1,4 +1,4 @@
-# Invasion-Ruscone
+# Invasion-Ruscone <a href="https://doi.org/10.5281/zenodo.17050899"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17050899.svg" alt="DOI" align="right" style="padding-top: 15px"></a>
 
 The goal of this model is to study the different modes of cell migration and to predict means to block it by considering not only spatial information obtained from the agent-based simulation but also intracellular regulation obtained from the Boolean model.
 
